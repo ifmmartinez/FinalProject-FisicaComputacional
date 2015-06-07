@@ -18,20 +18,20 @@ module IntervalMatrices
 #PUNTO MEDIO
 
 
-    function midpoint(M::IntervalMatrix)
+    function Midpoint(M::IntervalMatrix)
         x=zeros(Real,size(M)[1],size(M)[2])
         for i=1:size(M)[1]
             for j=1:size(M)[2]
-                x[i,j]=midpoint(M[i,j])
+                x[i,j]=Midpoint(M[i,j])
             end
         end
         return x
     end
 
-    function midpoint(V::IntervalVector)
+    function Midpoint(V::IntervalVector)
         x=zeros(Real,size(V)[1])
         for i=1:size(V)[1]
-            x[i]=midpoint(V[i])
+            x[i]=Midpoint(V[i])
         end
         return x
     end
@@ -132,7 +132,16 @@ module IntervalMatrices
         return U
     end
 
-    +(x::Interval, V::IntervalVector)=*(V,x)
+    *(x::Interval, V::IntervalVector)=*(V,x)
+
+
+  function /(V::IntervalVector,x::Interval)
+      U=Interval[]
+      for i=1:size(V)[1]
+          push!(U,ExtendedDivision(V[i],x))
+      end
+      return U
+  end
 
     function -(V::IntervalVector,x::Interval)
         U=Interval[]
@@ -338,7 +347,46 @@ function KrawczykMethod(A::IntervalMatrix, b::IntervalVector, e::Float64) #Para 
         end
     end
 
+  function GaussSeidelStep(A::IntervalMatrix,b::IntervalVector,x::IntervalVector)
+      Y=inv(Midpoint(A))
+      G=Y*A                                                   # x=Vector inicial
+      C=Y*b                                                   # Antes de la Intersección
+      numerador=C
+      n=size(A)[1]   #Numero de ecuaciones
 
+      X=x #Inicialización
+      for i=1:n
+          if contains(G[i,i],0)==false
+              if i>1
+                  for j=1:i-1
+                  numerador=numerador-G[i,j]*X[j]
+                  end
+              end
+
+              if i<n
+                  for j=i+1:n
+                  numerador=numerador-G[i,j]*X[j]
+                  end
+              end
+
+
+          else
+              return error("Un elemento diágonal contiene al cero")
+          end
+          return numerador/G[i,i]
+      end
+
+
+      #return numerador/G[i,i]
+  end
+
+  function GaussSeidel(A::IntervalMatrix,b::IntervalVector,x::IntervalVector,i::Int64) # i numero de iteraciones
+      for n=1:i
+          X_=GaussSeidelStep(A,b,x)
+          x=Intersection(X_,x)
+      end
+      return x
+  end
 
 
 
