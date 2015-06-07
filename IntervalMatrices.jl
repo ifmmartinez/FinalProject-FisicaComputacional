@@ -3,7 +3,8 @@ module IntervalMatrices
     using Base
     importall Base.Operators
     import Intervalos.Midpoint, Intervalos.Intersection
-    export IntervalVector, IntervalMatrix, Midpoint, Norm, AbsoluteValue, Identidad, Intersection, KrawczykMethod, GaussianElimination2x2, Det2x2, *, /, +, -, CramerRule
+    export IntervalVector, IntervalMatrix, Midpoint, Norm, AbsoluteValue, Identidad, Intersection, KrawczykMethod, GaussianElimination2x2, Det2x2, *, /, +, -, CramerRule, GaussSeidel, GaussSeidelStep
+
 
     typealias IntervalMatrix{Interval} Array{Interval,2}
     #Esto hará que cuando cree funciones pueda llamar IntervalMatrix a lo que yo quiera y
@@ -302,8 +303,8 @@ module IntervalMatrices
 
 
 ##KrawczykMethod
-function KrawczykMethod(A::IntervalMatrix, b::IntervalVector, e::Float64) #Para un e=error dado, método de Krawczyk
-        Y=inv(midpoint(A))
+  function KrawczykMethod(A::IntervalMatrix, b::IntervalVector, e::Float64) #Para un e=error dado, método de Krawczyk
+        Y=inv(Midpoint(A))
         E=Identidad(A)-Y*A
         c=Norm((Y*b)/(1-Norm(E)))
         X=Interval[]
@@ -326,7 +327,7 @@ function KrawczykMethod(A::IntervalMatrix, b::IntervalVector, e::Float64) #Para 
 
 
     function KrawczykMethod(A::IntervalMatrix, b::IntervalVector, n::Int64) #Para n número de iteraciones, método de Krawzyk
-        Y=inv(midpoint(A))
+        Y=inv(Midpoint(A))
         E=Identidad(A)-Y*A
         c=Norm((Y*b)/(1-Norm(E)))
         X=Interval[]
