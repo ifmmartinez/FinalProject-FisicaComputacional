@@ -4,7 +4,7 @@ module Intervalos
   import Base.exp, Base.log, Base.sin, Base.cos, Base.tan, Base.length, Base.contains
   importall Base.Operators
 
-  export Interval, +, -, *, /, ^, ExtendedDivision, contains, midpoint, length, Intersection, sin, cos, tan, exp, log
+  export Interval, +, -, *, /, ^, ExtendedDivision, contains, Midpoint, length, Intersection, sin, cos, tan, exp, log, AbsoluteValue
 
 
   type Interval #DEFINICIÓN DE INTERVALO
@@ -86,6 +86,10 @@ module Intervalos
         Interval(r, l)
   end
 
+  function +(x::Interval) #Había olvidado definir estas operación en el módulo
+      return Interval(+x.left, +x.right)
+  end
+
 
 
 #RESTAS
@@ -107,6 +111,10 @@ module Intervalos
         Interval(r, l)
   end
 
+  function -(x::Interval) #Había olvidado definir estas operación en el módulo
+      return Interval(-x.right, -x.left)
+  end
+
 
 
 #MULTIPLICACIONES
@@ -123,8 +131,13 @@ module Intervalos
   end
 
   function *(n::Real, x::Interval)
-    Interval(x, n)
+    *(x, n)
   end
+
+  function /(x::Interval, n::Real)
+    *(x,1/n)
+  end
+
 
 
 
@@ -143,7 +156,7 @@ module Intervalos
         end
   end
 
-  function /(n::Float64, y::Interval)
+  function /(n::Real, y::Interval)
    m=Interval(0.0, 0.0)
     with_rounding(RoundDown) do
       m.left=n
@@ -289,23 +302,44 @@ module Intervalos
     end
   end
 
+  function Midpoint(x::Interval)
+    return (x.left+x.right)/2
+  end
 
-  function midpoint(N::Interval) #PuntoMedio
-      return (N.left+N.right)/2
+  function AbsoluteValue(x::Interval) #Valor absoluto de un intervalo, poner en el modulo
+      return max(abs(x.left),abs(x.right))
   end
 
   function length(x::Interval)
       return x.right-x.left
   end
 
-  function Intersection(x::Interval, y::Interval)
-      if x.right>y.left
-          return Interval(max(x.left,y.left), min(x.right, y.right))
-      else
-          false
-      end
-end
+  function Intersection(x::Interval, y::Interval) #CAMBIAR LA DEFINICIÓN
+      if x.left<y.right||y.left<x.right
+            return Interval(max(x.left,y.left), min(x.right, y.right))
+        else
+          return error("Los intervalos no tienen puntos en común")
+        end
+  end
+
+  Base.one(A::Interval)=Interval(1)
+
+  Base.promote_type{T<:Number}(::Type{T}, ::Type{Interval}) = Interval
+
+  Base.convert(::Type{Interval}, x::Real) = Interval(x, x)
+  Base.convert(::Type{Interval}, x::Interval) = x
+
+  Base.zero(::Type{Interval}) = Interval(0,0)
+  promote_type(Int, Interval)
+
+  Base.zero(x::Interval) = Interval(0, 0)
+  Base.zero(x::Any) = 0
+
+
+
+
+
+
 
 end
-
 
